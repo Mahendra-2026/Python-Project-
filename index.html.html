@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bharat Luxury Stays</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
+}
+
+.page{display:none}
+.active{display:block}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:40px;
+}
+
+.small{
+max-width:500px;
+margin:auto;
+}
+
+.box{
+background:white;
+color:black;
+padding:25px;
+border-radius:10px;
+margin-bottom:15px;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:5px;
+cursor:pointer;
+margin-top:8px;
+}
+
+.gold{background:#c5a059;color:white}
+.green{background:#10b981;color:white}
+.red{background:#ef4444;color:white}
+
+.top{
+display:flex;
+justify-content:space-between;
+background:black;
+padding:15px 8%;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.card{
+background:white;
+color:black;
+border-radius:10px;
+overflow:hidden;
+}
+
+.card img{
+width:100%;
+height:180px;
+object-fit:cover;
+}
+
+.card-body{padding:15px}
+
+.row{
+display:flex;
+justify-content:space-between;
+}
+
+.price{
+background:#c5a059;
+color:white;
+padding:3px 8px;
+border-radius:15px;
+font-size:12px;
+}
+
+.search{
+width:100%;
+padding:10px;
+margin-bottom:20px;
+}
+
+.star{
+cursor:pointer;
+font-size:22px;
+color:gold;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<section id="login" class="page active">
+<div class="container small">
+<div class="box">
+
+<h2>Login</h2>
+
+<select id="loginRole">
+<option value="user">User</option>
+<option value="agent">Agent</option>
+</select>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPass" type="password" placeholder="Password">
+
+<button class="gold" onclick="login()">Login</button>
+
+<p>No account?
+<a href="#" onclick="go('signup')">Signup</a>
+</p>
+
+</div>
+</div>
+</section>
+
+<!-- SIGNUP -->
+
+<section id="signup" class="page">
+<div class="container small">
+<div class="box">
+
+<h2>Signup</h2>
+
+<select id="signupRole">
+<option value="user">User</option>
+<option value="agent">Agent</option>
+</select>
+
+<input id="signupName" placeholder="Name">
+<input id="signupEmail" placeholder="Email">
+<input id="signupPass" type="password" placeholder="Password">
+
+<button class="gold" onclick="signup()">Create Account</button>
+
+<p>Already account?
+<a href="#" onclick="go('login')">Login</a>
+</p>
+
+</div>
+</div>
+</section>
+
+<!-- DASHBOARD -->
+
+<section id="dash" class="page">
+
+<div class="top">
+<b style="color:#c5a059">BHARAT STAYS</b>
+
+<div>
+<button id="addBtn" onclick="go('add')" style="display:none">Add Hotel</button>
+<button onclick="showHistory()">Bookings</button>
+<button onclick="logout()">Logout</button>
+</div>
+</div>
+
+<div class="container">
+
+<input id="searchBox" class="search" placeholder="Search hotels..." onkeyup="loadHotels()">
+
+<div class="grid" id="hotelList"></div>
+
+</div>
+</section>
+
+<!-- ADD HOTEL -->
+
+<section id="add" class="page">
+<div class="container small">
+<div class="box">
+
+<h2>Add / Edit Hotel</h2>
+
+<input id="hName" placeholder="Hotel Name">
+<input id="hPrice" type="number" placeholder="Price">
+<input id="hImg" placeholder="Image URL">
+
+<button class="gold" onclick="saveHotel()">Save</button>
+<button onclick="go('dash')">Cancel</button>
+
+</div>
+</div>
+</section>
+
+<!-- BOOKING -->
+
+<section id="booking" class="page">
+<div class="container small">
+<div class="box">
+
+<h2 id="hotelTitle"></h2>
+
+<label>Check In</label>
+<input type="date" id="cin" onchange="calc()">
+
+<label>Check Out</label>
+<input type="date" id="cout" onchange="calc()">
+
+<label>Persons</label>
+<input type="number" id="persons" value="1" onchange="calc()">
+
+<input id="guestName" placeholder="Guest Name">
+
+<div class="row">
+<span>Nights</span>
+<span id="nights">0</span>
+</div>
+
+<div class="row">
+<span>Total</span>
+<span id="total">₹0</span>
+</div>
+
+<button class="green" onclick="pay()">Pay Now</button>
+<button onclick="go('dash')">Cancel</button>
+
+</div>
+</div>
+</section>
+
+<!-- UPI -->
+
+<section id="upi" class="page">
+<div class="container small">
+<div class="box" style="text-align:center">
+
+<h2>Scan & Pay</h2>
+
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=test@upi" width="200">
+
+<p>Scan with UPI and enter transaction ID</p>
+
+<input id="refId" placeholder="Enter 12 digit UPI Transaction ID">
+
+<button class="green" onclick="confirmPayment()">Confirm Payment</button>
+
+<button onclick="go('dash')">Cancel</button>
+
+</div>
+</div>
+</section>
+
+<!-- INVOICE -->
+
+<section id="invoice" class="page">
+<div class="container small">
+<div class="box">
+
+<h2>Booking Invoice</h2>
+
+<p id="invName"></p>
+<p id="invHotel"></p>
+<p id="invDate"></p>
+<p id="invTotal"></p>
+
+<h3>Rate this hotel</h3>
+
+<div>
+<span class="star" onclick="rate(1)">★</span>
+<span class="star" onclick="rate(2)">★</span>
+<span class="star" onclick="rate(3)">★</span>
+<span class="star" onclick="rate(4)">★</span>
+<span class="star" onclick="rate(5)">★</span>
+</div>
+
+<button class="gold" onclick="printInvoice()">Download PDF</button>
+<button onclick="go('dash')">Home</button>
+
+</div>
+</div>
+</section>
+
+<!-- HISTORY -->
+
+<section id="history" class="page">
+<div class="container">
+
+<h2>Booking History</h2>
+
+<div id="historyList"></div>
+
+<button onclick="go('dash')">Back</button>
+
+</div>
+</section>
+
+<script>
+
+let currentUser=null
+let selectedHotel=null
+let editIndex=null
+let lastBooking=null
+
+function go(id){
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+document.getElementById(id).classList.add("active")
+}
+
+function signup(){
+
+let role=signupRole.value
+let name=signupName.value
+let email=signupEmail.value
+let pass=signupPass.value
+
+localStorage.setItem(email,JSON.stringify({role,name,email,pass}))
+
+alert("Account created")
+go("login")
+}
+
+function login(){
+
+let role=loginRole.value
+let email=loginEmail.value
+let pass=loginPass.value
+
+let user=JSON.parse(localStorage.getItem(email))
+
+if(!user || user.pass!==pass || user.role!==role){
+alert("Invalid login")
+return
+}
+
+currentUser=user
+
+if(role==="agent"){
+addBtn.style.display="inline"
+}
+
+loadHotels()
+go("dash")
+
+}
+
+function logout(){
+location.reload()
+}
+
+function loadHotels(){
+
+let list=document.getElementById("hotelList")
+let hotels=JSON.parse(localStorage.getItem("hotels"))||[]
+let search=document.getElementById("searchBox").value.toLowerCase()
+
+list.innerHTML=""
+
+hotels.forEach((h,i)=>{
+
+if(!h.name.toLowerCase().includes(search)) return
+
+list.innerHTML+=`
+
+<div class="card">
+
+<img src="${h.img}">
+
+<div class="card-body">
+
+<div class="row">
+<b>${h.name}</b>
+<span class="price">₹${h.price}</span>
+</div>
+
+<p>Rating: ${h.rating || 0} ⭐</p>
+
+<button class="gold" onclick="book(${i})">Book</button>
+
+${currentUser.role==="agent" ? `
+<button onclick="editHotel(${i})">Edit</button>
+<button class="red" onclick="deleteHotel(${i})">Delete</button>
+` : ""}
+
+</div>
+</div>
+
+`
+})
+
+}
+
+function saveHotel(){
+
+let name=hName.value
+let price=hPrice.value
+let img=hImg.value
+
+let hotels=JSON.parse(localStorage.getItem("hotels"))||[]
+
+if(editIndex!==null){
+hotels[editIndex]={name,price,img,rating:hotels[editIndex].rating||0}
+editIndex=null
+}else{
+hotels.push({name,price,img,rating:0})
+}
+
+localStorage.setItem("hotels",JSON.stringify(hotels))
+
+go("dash")
+loadHotels()
+
+}
+
+function editHotel(i){
+
+let hotels=JSON.parse(localStorage.getItem("hotels"))
+
+hName.value=hotels[i].name
+hPrice.value=hotels[i].price
+hImg.value=hotels[i].img
+
+editIndex=i
+
+go("add")
+
+}
+
+function deleteHotel(i){
+
+let hotels=JSON.parse(localStorage.getItem("hotels"))
+
+if(confirm("Delete hotel?")){
+hotels.splice(i,1)
+localStorage.setItem("hotels",JSON.stringify(hotels))
+loadHotels()
+}
+
+}
+
+function book(i){
+
+let hotels=JSON.parse(localStorage.getItem("hotels"))
+
+selectedHotel=hotels[i]
+
+hotelTitle.innerText=selectedHotel.name
+
+go("booking")
+
+}
+
+function calc(){
+
+let cinVal=document.getElementById("cin").value
+let coutVal=document.getElementById("cout").value
+
+let persons=parseInt(document.getElementById("persons").value)||1
+
+let cin=new Date(cinVal)
+let cout=new Date(coutVal)
+
+let nights=0
+
+if(cinVal && coutVal && cout>cin){
+nights=Math.ceil((cout-cin)/(1000*60*60*24))
+}
+
+let total=nights*selectedHotel.price*persons
+
+document.getElementById("nights").innerText=nights
+document.getElementById("total").innerText="₹"+total
+
+return{nights,total}
+
+}
+
+function pay(){
+
+let guest=document.getElementById("guestName").value
+
+let c=calc()
+
+if(c.nights<=0 || !guest){
+alert("Fill booking details")
+return
+}
+
+go("upi")
+
+}
+
+function confirmPayment(){
+
+let ref=document.getElementById("refId").value
+
+if(ref.length!==12){
+alert("Enter valid 12 digit UPI transaction ID")
+return
+}
+
+let guest=document.getElementById("guestName").value
+let c=calc()
+
+saveBooking(guest,c)
+
+}
+
+function saveBooking(guest,c){
+
+let history=JSON.parse(localStorage.getItem("history"))||[]
+
+let booking={
+guest,
+hotel:selectedHotel.name,
+total:c.total,
+date:new Date().toLocaleDateString()
+}
+
+history.push(booking)
+
+localStorage.setItem("history",JSON.stringify(history))
+
+lastBooking=booking
+
+showInvoice()
+
+}
+
+function showInvoice(){
+
+invName.innerText="Guest: "+lastBooking.guest
+invHotel.innerText="Hotel: "+lastBooking.hotel
+invDate.innerText="Date: "+lastBooking.date
+invTotal.innerText="Total: ₹"+lastBooking.total
+
+go("invoice")
+
+}
+
+function rate(stars){
+
+let hotels=JSON.parse(localStorage.getItem("hotels"))
+
+hotels.forEach(h=>{
+if(h.name===selectedHotel.name){
+h.rating=stars
+}
+})
+
+localStorage.setItem("hotels",JSON.stringify(hotels))
+
+alert("Rating submitted!")
+
+}
+
+function printInvoice(){
+window.print()
+}
+
+function showHistory(){
+
+let history=JSON.parse(localStorage.getItem("history"))||[]
+
+let html=""
+
+history.forEach(h=>{
+
+html+=`
+
+<div class="box">
+
+<b>${h.hotel}</b>
+
+<div class="row">
+<span>${h.date}</span>
+<span>₹${h.total}</span>
+</div>
+
+</div>
+
+`
+
+})
+
+historyList.innerHTML=html
+
+go("history")
+
+}
+
+</script>
+
+</body>
+</html>
+```
